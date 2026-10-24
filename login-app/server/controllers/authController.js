@@ -369,6 +369,8 @@ export const verifyEmail = async (req, res) => {
   }
 };
 
+
+
 export const updateProfile = async (req, res) => {
   try {
     const { name } = req.body;
@@ -385,10 +387,11 @@ export const updateProfile = async (req, res) => {
       });
     }
 
+    // authMiddleware already fetched the user
     const user = await User.findByIdAndUpdate(
-      req.user.userId,
+      req.user._id,
       { $set: { name: name.trim() } },
-      { new: true, runValidators: true }
+      { returnDocument: "after", runValidators: true }
     );
 
     if (!user) {
@@ -402,13 +405,13 @@ export const updateProfile = async (req, res) => {
       user: publicUser(user),
     });
   } catch (error) {
-    console.error("Profile update error:", error.message);
-
+    console.error("Update profile error:", error);
     return res.status(500).json({
       message: "Unable to update profile.",
     });
   }
 };
+
 
 export const getMe = async (req, res) => {
   return res.status(200).json({

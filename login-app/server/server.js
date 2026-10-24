@@ -16,6 +16,7 @@ if (!process.env.MONGODB_URI || !process.env.JWT_SECRET) {
 }
 
 app.disable("x-powered-by");
+
 app.use(helmet());
 
 app.use(
@@ -32,18 +33,28 @@ app.get("/api/health", (req, res) => {
   res.json({ message: "Authentication API is running." });
 });
 
+
+
+// Register routes only once, after middleware.
 app.use("/api/auth", authRoutes);
 
 app.use((req, res) => {
-  res.status(404).json({ message: "API endpoint not found." });
+  res.status(404).json({
+    message: "API endpoint not found.",
+  });
 });
 
 const startServer = async () => {
-  await connectDB();
+  try {
+    await connectDB();
 
-  app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
-  });
+    app.listen(PORT, () => {
+      console.log(`Server running at http://localhost:${PORT}`);
+    });
+  } catch (error) {
+    console.error("Server startup failed:", error.message);
+    process.exit(1);
+  }
 };
 
 startServer();

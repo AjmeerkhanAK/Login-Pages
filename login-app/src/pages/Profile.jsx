@@ -24,33 +24,41 @@ export default function Profile() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSave = async (event) => {
-    event.preventDefault();
-    setMessage("");
-    setError("");
 
-    if (!name.trim()) {
-      setError("Name is required.");
-      return;
-    }
+const handleSave = async (event) => {
+  event.preventDefault();
+  setMessage("");
+  setError("");
 
-    setLoading(true);
+  const updatedName = name.trim();
 
-    try {
-      const response = await axios.put("/auth/profile", {
-        name: name.trim(),
-      });
+  if (!updatedName) {
+    setError("Name is required.");
+    return;
+  }
 
-      setMessage(response.data.message);
-      await dispatch(fetchMe()).unwrap();
-    } catch (err) {
-      setError(
-        err.response?.data?.message || "Unable to update profile."
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+  setLoading(true);
+
+  try {
+    const response = await axios.put("/auth/profile", {
+      name: updatedName,
+    });
+
+    // Update the input immediately
+    setName(response.data.user.name);
+    setMessage(response.data.message);
+
+    // Refresh the user stored in Redux
+    await dispatch(fetchMe()).unwrap();
+  } catch (err) {
+    setError(
+      err.response?.data?.message || "Unable to update profile."
+    );
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   if (!user) {
     return (
